@@ -11,8 +11,9 @@
 | 源 XML（开发者提供） | `{模块名}.xml` | `1202v0328-mib.xml`、`1201.xml` |
 | 精简 XML（生成，勿手改） | `{模块名}-parse.xml` | `1202v0328-mib-parse.xml` |
 | Java 实体（生成） | `entities/{模块名}/` | `entities/1202v0328-mib/` |
+| 注解（生成一份） | `entities/ann/` | 各模块共用 |
 
-`{模块名}` 就是去掉 `.xml` 的文件名，必须互不相同。无参执行会解析文件夹里**全部**源 `.xml`，自动跳过 `*-parse.xml`。多份互不影响：各有自己的 `-parse.xml` 和 `entities/{模块名}/`。
+`{模块名}` 就是去掉 `.xml` 的文件名，必须互不相同。无参执行会解析文件夹里**全部**源 `.xml`，自动跳过 `*-parse.xml`。实体按模块分目录；注解只写一份，不随模块拷贝。
 
 不要用无后缀的 `1202v0328-mib`，也不要把精简结果再当源文件。
 
@@ -27,8 +28,9 @@ py -3 parse_mib_xml.py
 | 输入文件夹 | `mib-xml/`（只认 `*.xml`，跳过 `*-parse.xml`） |
 | 精简 XML | `mib-xml/{模块名}-parse.xml` |
 | Java 实体 | `entities/{模块名}/` |
+| 注解 | `entities/ann/` |
 
-例如 `mib-xml/1202v0328-mib.xml` → `1202v0328-mib-parse.xml` + `entities/1202v0328-mib/`。
+例如 `mib-xml/1202v0328-mib.xml` → `1202v0328-mib-parse.xml` + `entities/1202v0328-mib/*.java`；注解写到 `entities/ann/`。Java 的 `package` 仍是 `com.maxvision.ccu.base.model.ntcip...`，磁盘上不再建这套目录。
 
 `phaseWalk` 注解 OID：`1.3.6.1.4.1.1206.4.2.1.1.2.1.2`；`SplitEntry` indexes：`splitNumber, splitPhase`。
 

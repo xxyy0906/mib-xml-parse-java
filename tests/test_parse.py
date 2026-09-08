@@ -32,15 +32,23 @@ class ParseMibXmlTest(unittest.TestCase):
         self.assertIn("phaseWalk", text)
         self.assertIn('indexes="splitNumber, splitPhase"', text)
 
-        walk = (result["entities"] / "com" / "maxvision" / "ccu" / "base"
-                / "model" / "ntcip" / "gen" / "asc" / "PhaseEntry.java")
+        walk = result["entities"] / "PhaseEntry.java"
         self.assertTrue(walk.is_file(), walk)
         java = walk.read_text(encoding="utf-8")
+        self.assertIn("AUTO-GENERATED FILE. Do not modify.", java)
+        self.assertIn("Generated at:", java)
+        self.assertTrue(java.lstrip().startswith("/*"))
         self.assertIn('oid = "1.3.6.1.4.1.1206.4.2.1.1.2.1.2"', java)
         self.assertIn("byte[] phaseConcurrency", java)
 
-        split = walk.parent / "SplitEntry.java"
+        split = result["entities"] / "SplitEntry.java"
         self.assertIn('indexes = {"splitNumber", "splitPhase"}', split.read_text(encoding="utf-8"))
+
+        ann = result["annotations"] / "NtcipColumn.java"
+        self.assertTrue(ann.is_file(), ann)
+        self.assertEqual(result["annotations"], self.out / "entities" / "ann")
+        self.assertFalse((result["entities"] / "ann").exists())
+        self.assertFalse((result["entities"] / "com").exists())
 
     def test_list_mib_xml_skips_parse_xml(self):
         folder = Path(__file__).parent / "fixtures"

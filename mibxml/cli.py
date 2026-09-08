@@ -62,4 +62,5 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(f"parse xml : {result['parse_xml']}")
         print(f"entities  : {result['entities']}")
+        print(f"annotations: {result['annotations']}")
     return 0

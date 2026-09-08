@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -114,9 +115,21 @@ def _java_string_array(values: list[str]) -> str:
     return "{" + inner + "}"
 
 
+def _generated_header() -> str:
+    stamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
+    return (
+        "/*\n"
+        " * AUTO-GENERATED FILE. Do not modify.\n"
+        " * This source is produced by the mib-xml parser; edit the generator or the source XML instead.\n"
+        f" * Generated at: {stamp}\n"
+        " */\n"
+        "\n"
+    )
+
+
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(_generated_header() + text, encoding="utf-8")
 
 
 def _entry_child(table: ET.Element) -> ET.Element | None:
@@ -225,12 +238,28 @@ def _walk_write(elem: ET.Element, package: str, gen_dir: Path, parent_kind: str 
         _write(gen_dir / f"{class_name}.java", _emit_entry(elem, package))
 
 
-def write_java_entities(slim_root: ET.Element, out_dir: Path, package_leaf: str) -> Path:
-    ann_dir = out_dir / ANN_PACKAGE.replace(".", "/")
+def annotation_java_dir(entities_root: Path) -> Path:
+    """Shared annotations: entities/ann/."""
+    return entities_root / "ann"
+
+
+def write_annotations(entities_root: Path) -> Path:
+    ann_dir = annotation_java_dir(entities_root)
     for name, source in ANNOTATION_SOURCES.items():
         _write(ann_dir / name, source)
+    return ann_dir
+
+
+def write_java_entities(
+    slim_root: ET.Element,
+    out_dir: Path,
+    package_leaf: str,
+    *,
+    ann_root: Path,
+) -> Path:
+    write_annotations(ann_root)
     package = f"{GEN_PACKAGE_PREFIX}.{package_leaf}"
-    gen_dir = out_dir / package.replace(".", "/")
+    gen_dir = out_dir
     targets = list(slim_root) if slim_root.tag.lower() == "root" else [slim_root]
     for child in targets:
         _walk_write(child, package, gen_dir, KIND_GROUP)
