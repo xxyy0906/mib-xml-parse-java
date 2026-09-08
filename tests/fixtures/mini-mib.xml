@@ -1,0 +1,23 @@
+<root module="test">
+    <asc oid=".1.3.6.1.4.1.1206.4.2.1" type="" access="" indexes="" desc="root desc" full=".iso.asc">
+        <phase oid=".1.3.6.1.4.1.1206.4.2.1.1" type="" desc="phase desc">
+            <maxPhases oid=".1.3.6.1.4.1.1206.4.2.1.1.1" type="INTEGER" access="read-only" desc="n"/>
+            <phaseTable oid=".1.3.6.1.4.1.1206.4.2.1.1.2" type="SEQUENCE OF PhaseEntry" access="not-accessible">
+                <phaseEntry oid=".1.3.6.1.4.1.1206.4.2.1.1.2.1" type="PhaseEntry" indexes="phaseNumber">
+                    <phaseNumber oid=".1.3.6.1.4.1.1206.4.2.1.1.2.1.1" type="INTEGER" access="read-only"/>
+                    <phaseWalk oid=".1.3.6.1.4.1.1206.4.2.1.1.2.1.2" type="INTEGER" access="read-write"/>
+                    <phaseConcurrency oid=".1.3.6.1.4.1.1206.4.2.1.1.2.1.23" type="OCTET STRING" access="read-write"/>
+                </phaseEntry>
+            </phaseTable>
+        </phase>
+        <coord oid=".1.3.6.1.4.1.1206.4.2.1.4" type="">
+            <splitTable oid=".1.3.6.1.4.1.1206.4.2.1.4.9" type="SEQUENCE OF SplitEntry" access="not-accessible">
+                <splitEntry oid=".1.3.6.1.4.1.1206.4.2.1.4.9.1" type="SplitEntry" indexes="splitNumber, splitPhase">
+                    <splitNumber oid=".1.3.6.1.4.1.1206.4.2.1.4.9.1.1" type="INTEGER" access="read-only"/>
+                    <splitPhase oid=".1.3.6.1.4.1.1206.4.2.1.4.9.1.2" type="INTEGER" access="read-only"/>
+                    <splitTime oid=".1.3.6.1.4.1.1206.4.2.1.4.9.1.3" type="INTEGER" access="read-write"/>
+                </splitEntry>
+            </splitTable>
+        </coord>
+    </asc>
+</root>
