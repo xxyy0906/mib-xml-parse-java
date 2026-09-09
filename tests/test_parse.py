@@ -41,6 +41,15 @@ class ParseMibXmlTest(unittest.TestCase):
         self.assertIn('oid = "1.3.6.1.4.1.1206.4.2.1.1.2.1.2"', java)
         self.assertIn("byte[] phaseConcurrency", java)
 
+        phase = result["entities"] / "NtcipPhase.java"
+        self.assertTrue(phase.is_file(), phase)
+        self.assertFalse((result["entities"] / "Phase.java").exists())
+        self.assertIn("class NtcipPhase", phase.read_text(encoding="utf-8"))
+        self.assertTrue((result["entities"] / "NtcipCoord.java").is_file())
+
+        self.assertIsNone(result["itms"])
+        self.assertFalse((self.out / "entities" / "itms-model-temp").exists())
+
         split = result["entities"] / "SplitEntry.java"
         self.assertIn('indexes = {"splitNumber", "splitPhase"}', split.read_text(encoding="utf-8"))
 
@@ -49,6 +58,26 @@ class ParseMibXmlTest(unittest.TestCase):
         self.assertEqual(result["annotations"], self.out / "entities" / "ann")
         self.assertFalse((result["entities"] / "ann").exists())
         self.assertFalse((result["entities"] / "com").exists())
+
+    def test_itms_opt_in_writes_group_files_with_inner_entries(self):
+        result = parse_mib_xml(self.fixture, self.out, gen_itms=True)
+        itms_dir = result["itms"]
+        self.assertIsNotNone(itms_dir)
+        itms_phase = itms_dir / "NtcipPhase.java"
+        self.assertTrue(itms_phase.is_file(), itms_phase)
+        itms_text = itms_phase.read_text(encoding="utf-8")
+        self.assertIn("extends GBT2017Packet<NtcipPhase>", itms_text)
+        self.assertIn("@Label(Object = 1, Modify = false)", itms_text)
+        self.assertNotIn("ITMS type =", itms_text)
+        self.assertIn("public static class PhaseEntry", itms_text)
+        self.assertIn("@Label(Object = 2, Attribute = 1, Modify = false)", itms_text)
+        self.assertIn("@Label(Object = 2, Attribute = 2, Modify = true)", itms_text)
+        self.assertFalse((itms_dir / "PhaseEntry.java").exists())
+        self.assertFalse((itms_dir / "SplitEntry.java").exists())
+        itms_coord = (itms_dir / "NtcipCoord.java").read_text(encoding="utf-8")
+        self.assertIn("public static class SplitEntry", itms_coord)
+        self.assertTrue((itms_dir / "NtcipAsc.java").is_file())
+        self.assertTrue((itms_dir / "README.md").is_file())
 
     def test_list_mib_xml_skips_parse_xml(self):
         folder = Path(__file__).parent / "fixtures"

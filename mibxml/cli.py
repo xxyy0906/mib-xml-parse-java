@@ -44,6 +44,15 @@ def main(argv: list[str] | None = None) -> int:
             "slim xml stays next to the input file."
         ),
     )
+    parser.add_argument(
+        "--itms",
+        action="store_true",
+        default=False,
+        help=(
+            "Also generate ITMS Java into entities/itms-model-temp. "
+            "Off by default."
+        ),
+    )
     args = parser.parse_args(argv)
     output_dir = Path(args.output_dir) if args.output_dir else None
     try:
@@ -56,11 +65,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     for input_path in inputs:
         try:
-            result = parse_mib_xml(input_path, output_dir)
+            result = parse_mib_xml(input_path, output_dir, gen_itms=args.itms)
         except (FileNotFoundError, ValueError) as exc:
             print(exc, file=sys.stderr)
             return 1
         print(f"parse xml : {result['parse_xml']}")
         print(f"entities  : {result['entities']}")
         print(f"annotations: {result['annotations']}")
+        if result["itms"] is not None:
+            print(f"itms-temp : {result['itms']}")
     return 0

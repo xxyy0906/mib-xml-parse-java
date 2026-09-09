@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 from .classify import java_class_name
 from .gen_java import annotation_java_dir, write_java_entities
+from .gen_itms import write_itms_entities
 from .strip import load_xml, strip_tree, write_xml
 
 # parser/mibxml/pipeline.py → parser → model-ntcip
@@ -58,8 +59,13 @@ def package_leaf_from_root(slim_root: ET.Element) -> str:
     return slim_root.tag or "mib"
 
 
-def parse_mib_xml(input_path: Path, output_dir: Path | None = None) -> dict[str, Path]:
-    """Generic: any mib-xml → slim xml + Java entities."""
+def parse_mib_xml(
+    input_path: Path,
+    output_dir: Path | None = None,
+    *,
+    gen_itms: bool = False,
+) -> dict[str, Path | None]:
+    """Generic: any mib-xml → slim xml + Java entities. ITMS Java is opt-in."""
     input_path = input_path.resolve()
     if not input_path.is_file():
         raise FileNotFoundError(f"input xml not found: {input_path}")
@@ -73,10 +79,12 @@ def parse_mib_xml(input_path: Path, output_dir: Path | None = None) -> dict[str,
         parse_xml_dir = output_dir
         entities_dir = output_dir / "entities" / stem
         ann_root = output_dir / "entities"
+        itms_dir = output_dir / "entities" / "itms-model-temp"
     else:
         parse_xml_dir = input_path.parent
         entities_dir = default_java_entities_dir(input_path)
         ann_root = DEFAULT_ENTITIES_DIR
+        itms_dir = DEFAULT_ENTITIES_DIR / "itms-model-temp"
 
     parse_xml_dir.mkdir(parents=True, exist_ok=True)
     raw_root = load_xml(str(input_path))
@@ -92,9 +100,14 @@ def parse_mib_xml(input_path: Path, output_dir: Path | None = None) -> dict[str,
     leaf = java_class_name(package_leaf_from_root(slim_root))
     leaf = leaf[0].lower() + leaf[1:] if leaf else "mib"
     write_java_entities(slim_root, entities_dir, leaf, ann_root=ann_root)
+    if gen_itms:
+        write_itms_entities(slim_root, itms_dir)
+    else:
+        itms_dir = None
 
     return {
         "parse_xml": parse_xml_path,
         "entities": entities_dir,
         "annotations": annotation_java_dir(ann_root),
+        "itms": itms_dir,
     }

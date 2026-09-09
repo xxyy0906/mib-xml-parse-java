@@ -38,6 +38,11 @@ def java_class_name(tag: str) -> str:
     return tag[0].upper() + tag[1:]
 
 
+def java_group_class_name(tag: str) -> str:
+    """MIB group root classes get an Ntcip prefix; Entry/column classes do not."""
+    return "Ntcip" + java_class_name(tag)
+
+
 def java_type(syntax_name: str) -> str:
     upper = syntax_name.upper()
     if "OCTET STRING" in upper:

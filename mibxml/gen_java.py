@@ -13,6 +13,7 @@ from .classify import (
     KIND_SCALAR,
     KIND_TABLE,
     java_class_name,
+    java_group_class_name,
     java_field_name,
     java_type,
     kind,
@@ -169,7 +170,7 @@ def _emit_entry(elem: ET.Element, package: str) -> str:
 
 
 def _emit_group(elem: ET.Element, package: str) -> str:
-    class_name = java_class_name(elem.tag)
+    class_name = java_group_class_name(elem.tag)
     lines = [
         f"package {package};",
         "",
@@ -188,7 +189,7 @@ def _emit_group(elem: ET.Element, package: str) -> str:
         child_kind = kind(child, parent_kind)
         field = java_field_name(child.tag)
         if child_kind == KIND_GROUP:
-            nested = java_class_name(child.tag)
+            nested = java_group_class_name(child.tag)
             lines.append(f"    public {nested} {field};")
             lines.append("")
         elif child_kind == KIND_SCALAR:
@@ -225,7 +226,7 @@ def _emit_group(elem: ET.Element, package: str) -> str:
 def _walk_write(elem: ET.Element, package: str, gen_dir: Path, parent_kind: str | None) -> None:
     this_kind = kind(elem, parent_kind)
     if this_kind == KIND_GROUP:
-        class_name = java_class_name(elem.tag)
+        class_name = java_group_class_name(elem.tag)
         _write(gen_dir / f"{class_name}.java", _emit_group(elem, package))
         for child in elem:
             _walk_write(child, package, gen_dir, KIND_GROUP)
